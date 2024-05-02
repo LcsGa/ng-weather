@@ -7,10 +7,12 @@ import {ConditionsAndZip} from './conditions-and-zip.type';
 import {Forecast} from './forecasts-list/forecast.type';
 import { LocationService } from './location.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { withCache } from './shared/cache';
 
 @Injectable()
 export class WeatherService {
 
+  static TWO_HOURS_MILLIS = 2 * 60 * 60 * 1000;
   static URL = 'http://api.openweathermap.org/data/2.5';
   static APPID = '5a4b2d457ecbef9eb2a71e480b947604';
   static ICON_URL = 'https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-hdpi/';
@@ -33,8 +35,10 @@ export class WeatherService {
 
   addCurrentConditions(zipcode: string): void {
     // Here we make a request to get the current conditions data from the API. Note the use of backticks and an expression to insert the zipcode
-    this.http.get<CurrentConditions>(`${WeatherService.URL}/weather?zip=${zipcode},fr&units=metric&APPID=${WeatherService.APPID}`)
-      .subscribe(data => this.currentConditions.update(conditions => [...conditions, {zip: zipcode, data}]));
+    this.http.get<CurrentConditions>(
+      `${WeatherService.URL}/weather?zip=${zipcode},fr&units=metric&APPID=${WeatherService.APPID}`,
+      { context: withCache(WeatherService.TWO_HOURS_MILLIS) }
+    ).subscribe(data => this.currentConditions.update(conditions => [...conditions, {zip: zipcode, data}]));
   }
 
   removeCurrentConditions(zipcode: string) {
@@ -53,8 +57,10 @@ export class WeatherService {
 
   getForecast(zipcode: string): Observable<Forecast> {
     // Here we make a request to get the forecast data from the API. Note the use of backticks and an expression to insert the zipcode
-    return this.http.get<Forecast>(`${WeatherService.URL}/forecast/daily?zip=${zipcode},fr&units=metric&cnt=5&APPID=${WeatherService.APPID}`);
-
+    return this.http.get<Forecast>(
+      `${WeatherService.URL}/forecast/daily?zip=${zipcode},fr&units=metric&cnt=5&APPID=${WeatherService.APPID}`,
+      { context: withCache(WeatherService.TWO_HOURS_MILLIS) }
+    );
   }
 
   getWeatherIcon(id): string {

@@ -15,6 +15,7 @@ import {HttpClientModule} from "@angular/common/http";
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { TabsComponent, TabComponent } from "./shared/components/tabs";
+import { provideHttpCaching } from "./shared/cache";
 
 @NgModule({
   declarations: [
@@ -34,7 +35,7 @@ import { TabsComponent, TabComponent } from "./shared/components/tabs";
     TabsComponent,
     TabComponent,
   ],
-  providers: [LocationService, WeatherService],
+  providers: [LocationService, WeatherService, provideHttpCaching()],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
