@@ -33,12 +33,19 @@ export class WeatherService {
 
   constructor(private http: HttpClient, private readonly locationService: LocationService) {}
 
+  #fetchCurrentConditions(zipcode: string, options?: { refresh: boolean }) {
+    const url = `${WeatherService.URL}/weather?zip=${zipcode},fr&units=metric&APPID=${WeatherService.APPID}`;
+
+    if (options?.refresh) localStorage.removeItem(url);
+
+    return this.http.get<CurrentConditions>(url, { context: withCache(WeatherService.TWO_HOURS_MILLIS) });
+  }
+
   addCurrentConditions(zipcode: string): void {
     // Here we make a request to get the current conditions data from the API. Note the use of backticks and an expression to insert the zipcode
-    this.http.get<CurrentConditions>(
-      `${WeatherService.URL}/weather?zip=${zipcode},fr&units=metric&APPID=${WeatherService.APPID}`,
-      { context: withCache(WeatherService.TWO_HOURS_MILLIS) }
-    ).subscribe(data => this.currentConditions.update(conditions => [...conditions, {zip: zipcode, data}]));
+    this.#fetchCurrentConditions(zipcode).subscribe(data =>
+      this.currentConditions.update(conditions => [...conditions, {zip: zipcode, data}])
+    );
   }
 
   removeCurrentConditions(zipcode: string) {
@@ -49,6 +56,14 @@ export class WeatherService {
       }
       return conditions;
     })
+  }
+
+  updateCurrentConditions(zipcode: string) {
+    this.#fetchCurrentConditions(zipcode, { refresh: true }).subscribe(data =>
+      this.currentConditions.update(conditions => 
+        conditions.map((cond) => ({ zip: cond.zip, data: cond.zip === zipcode ? data : cond.data }))
+      )
+    );
   }
 
   getCurrentConditions(): Signal<ConditionsAndZip[]> {

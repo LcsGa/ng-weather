@@ -22,6 +22,10 @@
           </div>
           <img [src]="weatherService.getWeatherIcon(location.data.weather[0].id)" />
         </div>
+
+        <button class="btn btn-default" (click)="$event.stopPropagation(); weatherService.updateCurrentConditions(location.zip)">
+          Refresh
+        </button>
       </app-tab>
     }
   </app-tabs>
