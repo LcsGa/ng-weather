@@ -6,7 +6,7 @@
         label="{{ location.data.name }} ({{ location.zip }})"
         (close)="locationService.removeLocation($event)"
       >
-        <div class="well flex" (click)="showForecast(location.zip)">
+        <div class="well" (click)="showForecast(location.zip)">
           <div>
             <h3>{{location.data.name}} ({{location.zip}})</h3>
             <h4>Current conditions: {{location.data.weather[0].main}}</h4>
